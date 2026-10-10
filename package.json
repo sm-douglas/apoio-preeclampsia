@@ -1,0 +1,71 @@
+{
+  "name": "pre-eclampsia-app",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "lint": "oxlint",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "desktop": "npm run build && electron .",
+    "desktop:build": "npm run build && electron-builder --win portable --publish never"
+  },
+  "dependencies": {
+    "@fontsource/ibm-plex-mono": "^5.3.0",
+    "@fontsource/ibm-plex-sans": "^5.3.0",
+    "dexie": "^4.4.5",
+    "lucide-react": "^1.43.0",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.3.3",
+    "@types/node": "^24.13.3",
+    "@types/react": "^19.2.18",
+    "@types/react-dom": "^19.2.4",
+    "@vitejs/plugin-react": "^6.1.0",
+    "autoprefixer": "^10.5.5",
+    "electron": "^44.7.0",
+    "electron-builder": "^26.15.3",
+    "oxlint": "^1.79.0",
+    "postcss": "^8.5.28",
+    "tailwindcss": "^4.3.3",
+    "typescript": "~6.0.2",
+    "vite": "^8.2.2",
+    "vitest": "^5.0.3"
+  },
+  "main": "electron/main.cjs",
+  "description": "Apoio à decisão clínica para pré-eclâmpsia na Atenção Primária (PWA e executável Windows)",
+  "author": "Douglas Santana Mendonça",
+  "license": "UNLICENSED",
+  "build": {
+    "appId": "br.pesquisa.preeclampsia.apoio",
+    "productName": "Apoio Pré-eclâmpsia",
+    "copyright": "Pesquisa de mestrado, Renata Mendonça",
+    "directories": {
+      "output": "release",
+      "buildResources": "build"
+    },
+    "files": [
+      "dist/**/*",
+      "electron/**/*",
+      "build/icon.png",
+      "package.json"
+    ],
+    "asar": true,
+    "win": {
+      "target": [
+        {
+          "target": "portable",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "build/icon.ico",
+      "artifactName": "Apoio-Preeclampsia-${version}-portable.exe"
+    }
+  }
+}

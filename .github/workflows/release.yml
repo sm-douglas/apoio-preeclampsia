@@ -1,0 +1,41 @@
+# Gera o executável portátil de Windows e publica na página "Releases" do GitHub.
+# Como usar: crie uma tag de versão e envie para o GitHub:
+#   git tag v1.0.0
+#   git push origin v1.0.0
+# Em alguns minutos aparecem na aba Releases:
+#   - Apoio-Preeclampsia-<versão>-portable.exe  (baixar e dar duplo clique, sem instalar)
+#   - app-web-<versão>.zip                        (versão web já compilada, para hospedar)
+name: Release
+on:
+  push:
+    tags: ["v*"]
+permissions:
+  contents: write
+jobs:
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Conferir que a versão da tag é a do app
+        shell: pwsh
+        run: |
+          $v = (Get-Content package.json | ConvertFrom-Json).version
+          if ("v$v" -ne "${{ github.ref_name }}") { Write-Error "Tag ${{ github.ref_name }} difere de package.json ($v)"; exit 1 }
+      - run: npm test
+      - name: Teste de fumaça (o app abre na janela do Electron?)
+        run: npm run build && npx electron . --smoke-test
+      - run: npm run desktop:build
+      - name: Compactar a versão web
+        shell: pwsh
+        run: Compress-Archive -Path dist\* -DestinationPath "release\app-web-${{ github.ref_name }}.zip"
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            release/*.exe
+            release/app-web-*.zip
+          generate_release_notes: true

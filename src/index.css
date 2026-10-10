@@ -1,0 +1,82 @@
+/* Fontes empacotadas no app (funcionam offline, sem CDN). */
+@import "@fontsource/ibm-plex-sans/latin-400.css";
+@import "@fontsource/ibm-plex-sans/latin-500.css";
+@import "@fontsource/ibm-plex-sans/latin-600.css";
+@import "@fontsource/ibm-plex-sans/latin-700.css";
+@import "@fontsource/ibm-plex-mono/latin-500.css";
+@import "@fontsource/ibm-plex-mono/latin-600.css";
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, monospace;
+
+  /* Base clínica: teal-azulado profundo, não o roxo/indigo genérico de SaaS */
+  --color-clinico-50: #eaf3f2;
+  --color-clinico-100: #cfe4e2;
+  --color-clinico-200: #a9cecb;
+  --color-clinico-400: #2f7d7a;
+  --color-clinico-600: #0f5d5a;
+  --color-clinico-700: #0b4745;
+  --color-clinico-800: #083836;
+  --color-clinico-900: #062827;
+
+  /* Cor sempre com significado funcional, nunca decorativo */
+  --color-risco-baixo-50: #eaf5ec;
+  --color-risco-baixo-500: #2f9c4c;
+  --color-risco-baixo-600: #1e7a34;
+  --color-risco-baixo-800: #144f22;
+
+  --color-risco-moderado-50: #fbf2e2;
+  --color-risco-moderado-500: #c98a10;
+  --color-risco-moderado-600: #9a6700;
+  --color-risco-moderado-800: #664500;
+
+  --color-risco-alto-50: #fbeae8;
+  --color-risco-alto-500: #d13a30;
+  --color-risco-alto-600: #b3261e;
+  --color-risco-alto-800: #7a1a15;
+
+  --color-indeterminado-50: #eef0f2;
+  --color-indeterminado-400: #848d95;
+  --color-indeterminado-600: #55606b;
+  --color-indeterminado-800: #383f46;
+}
+
+@layer base {
+  html {
+    font-family: var(--font-sans);
+  }
+  body {
+    background-color: #eef3f2;
+    color: #14201f;
+  }
+}
+
+/* Impressão: só o conteúdo do resultado, sem navegação nem controles */
+.only-print {
+  display: none;
+}
+
+@media print {
+  .only-print {
+    display: block !important;
+  }
+  .print-area div {
+    break-inside: avoid;
+  }
+  * {
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+  .no-print {
+    display: none !important;
+  }
+  .print-area {
+    box-shadow: none !important;
+    border: none !important;
+  }
+  body {
+    background: white !important;
+  }
+}
