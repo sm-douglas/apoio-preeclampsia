@@ -1,7 +1,10 @@
 import { Calendar, User, Scale, Ruler, Activity } from "lucide-react";
 import type { DadosGestante } from "../engine/types";
 import { CampoNumerico } from "./CampoNumerico";
-import { avisoIdentificacao, erroFaixa, erroPressaoArterial } from "../validacao";
+import { CampoData } from "./CampoData";
+import { calcularIMC } from "../engine/engine";
+import { LIMIAR_IMC_OBESIDADE } from "../engine/rules-data";
+import { avisoIdentificacao, erroDataNascimento, erroFaixa, erroPressaoArterial } from "../validacao";
 
 interface Props {
   dados: DadosGestante;
@@ -15,6 +18,7 @@ const TAM_ICONE = 14;
 export function EtapaDados({ dados, tocados, aoAtualizar, aoAlternarNaoInformado }: Props) {
   const naoInformado = (chave: keyof DadosGestante) => tocados.has(chave) && dados[chave] == null;
 
+  const imc = calcularIMC(dados.pesoKg, dados.alturaCm);
   const erroCruzadoPA = erroPressaoArterial(dados.pressaoSistolicaMmHg, dados.pressaoDiastolicaMmHg);
 
   return (
@@ -59,17 +63,20 @@ export function EtapaDados({ dados, tocados, aoAtualizar, aoAlternarNaoInformado
           aoMudar={(v) => aoAtualizar({ idadeGestacionalSemanas: v })}
           aoAlternarNaoInformado={() => aoAlternarNaoInformado("idadeGestacionalSemanas")}
         />
-        <CampoNumerico
-          icone={<User size={TAM_ICONE} className="text-clinico-600" />}
-          rotulo="Idade materna"
-          unidade="anos"
-          valor={dados.idadeMaternaAnos}
-          tocado={tocados.has("idadeMaternaAnos")}
-          naoInformadoAtivo={naoInformado("idadeMaternaAnos")}
-          erro={erroFaixa("idadeMaternaAnos", dados.idadeMaternaAnos)}
-          aoMudar={(v) => aoAtualizar({ idadeMaternaAnos: v })}
-          aoAlternarNaoInformado={() => aoAlternarNaoInformado("idadeMaternaAnos")}
-        />
+        <div className="col-span-2">
+          <CampoData
+            icone={<User size={TAM_ICONE} className="text-clinico-600" />}
+            rotulo="Data de nascimento"
+            valor={dados.dataNascimento}
+            tocado={tocados.has("dataNascimento")}
+            naoInformadoAtivo={naoInformado("dataNascimento")}
+            erro={erroDataNascimento(dados.dataNascimento)}
+            maximo={new Date().toISOString().slice(0, 10)}
+            apoio={dados.idadeMaternaAnos != null ? `Idade calculada: ${dados.idadeMaternaAnos} anos` : null}
+            aoMudar={(v) => aoAtualizar({ dataNascimento: v })}
+            aoAlternarNaoInformado={() => aoAlternarNaoInformado("dataNascimento")}
+          />
+        </div>
         <CampoNumerico
           icone={<Scale size={TAM_ICONE} className="text-clinico-600" />}
           rotulo="Peso"
@@ -92,6 +99,18 @@ export function EtapaDados({ dados, tocados, aoAtualizar, aoAlternarNaoInformado
           aoMudar={(v) => aoAtualizar({ alturaCm: v })}
           aoAlternarNaoInformado={() => aoAlternarNaoInformado("alturaCm")}
         />
+        <div className="col-span-2" aria-live="polite">
+          {imc != null ? (
+            <p className="text-sm text-clinico-800 rounded-md bg-clinico-50 px-3 py-2">
+              IMC: <span className="font-mono font-semibold">{imc.toLocaleString("pt-BR", { minimumFractionDigits: 1 })}</span> kg/m²
+              {imc > LIMIAR_IMC_OBESIDADE && (
+                <span className="text-xs text-indeterminado-600"> · acima de {LIMIAR_IMC_OBESIDADE}, entra como fator de alto risco</span>
+              )}
+            </p>
+          ) : (
+            <p className="text-xs text-indeterminado-600 px-1">O IMC aparece aqui quando peso e altura forem preenchidos.</p>
+          )}
+        </div>
         <CampoNumerico
           icone={<Activity size={TAM_ICONE} className="text-clinico-600" />}
           rotulo="PA sistólica"

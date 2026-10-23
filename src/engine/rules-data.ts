@@ -122,7 +122,216 @@ export const REC_MGSO4_IMINENCIA: RecomendacaoComFonte = {
   fonte: [pg(FONTES.MS, "155"), pg(FONTES.FEBRASGO_2019, "324"), pg(FONTES.RBEHG, "29 e 31")].join("; "),
 };
 
+export const REC_MGSO4_GRAVIDADE_EXAMES: RecomendacaoComFonte = {
+  texto:
+    "Sulfato de magnésio é altamente recomendado na pré-eclâmpsia com sinais de gravidade, incluindo síndrome HELLP e deterioração laboratorial. Sem bomba de infusão ou para transporte, o esquema preferencial é o de Pritchard. Prescrição a critério do profissional.",
+  fonte: [pg(FONTES.RBEHG, "29 e 31"), pg(FONTES.MS, "155")].join("; "),
+};
+
 export const LIMIAR_PA_GRAVE = { sistolica: 160, diastolica: 110 };
 export const LIMIAR_HIPERTENSAO = { sistolica: 140, diastolica: 90 };
 export const LIMIAR_IMC_OBESIDADE = 30;
 export const LIMIAR_IDADE_MATERNA_RISCO = 35;
+
+// ============================================================
+// Pilar 3: diagnóstico. Exames e critérios, sempre fonte por fonte.
+// Os protocolos divergem em alguns limites; o app avalia o valor em
+// cada fonte e mostra as duas leituras, sem escolher uma.
+// ============================================================
+
+export const IG_MINIMA_PRE_ECLAMPSIA_SEMANAS = 20;
+
+const MS_DEF = pg(FONTES.MS, "150");
+const MS_PROTEINURIA = pg(FONTES.MS, "151");
+const MS_HELLP = pg(FONTES.MS, "160");
+const MS_RENAL = pg(FONTES.MS, "154");
+const RB_DEF = pg(FONTES.RBEHG, "5");
+const RB_QUADRO1 = pg(FONTES.RBEHG, "6");
+const RB_HAS_2_AFERICOES = pg(FONTES.RBEHG, "7");
+const RB_HEMOLISE = pg(FONTES.RBEHG, "23");
+const RB_VITALIDADE = pg(FONTES.RBEHG, "40");
+const RB_DOPPLER_UTERINO = pg(FONTES.RBEHG, "17");
+
+export const FONTE_DEFINICAO_PE = [MS_DEF, RB_DEF].join("; ");
+export const FONTE_HAS_2_AFERICOES = RB_HAS_2_AFERICOES;
+export const FONTE_SOBREPOSTA = RB_DEF;
+
+export type DirecaoCriterio = "maior" | "maior_igual" | "menor" | "menor_igual";
+
+export interface RegraExame {
+  fonte: string;
+  /** Texto exibido, ex.: "≤ 150.000/mm³". */
+  texto: string;
+  direcao: DirecaoCriterio;
+  limite: number;
+}
+
+export function atende(valor: number, r: RegraExame): boolean {
+  switch (r.direcao) {
+    case "maior":
+      return valor > r.limite;
+    case "maior_igual":
+      return valor >= r.limite;
+    case "menor":
+      return valor < r.limite;
+    case "menor_igual":
+      return valor <= r.limite;
+  }
+}
+
+/** Exame que conta como disfunção de órgão-alvo ("organo") ou apenas como gravidade/HELLP ("gravidade"). */
+export interface ExameLab {
+  chave: keyof DadosGestante;
+  rotulo: string;
+  unidade: string;
+  papel: "organo" | "gravidade";
+  regras: RegraExame[];
+}
+
+export const EXAMES_LAB: ExameLab[] = [
+  {
+    chave: "plaquetasMm3",
+    rotulo: "Plaquetas",
+    unidade: "/mm³",
+    papel: "organo",
+    regras: [
+      { fonte: RB_QUADRO1, texto: "≤ 150.000/mm³ (trombocitopenia)", direcao: "menor_igual", limite: 150_000 },
+      { fonte: MS_HELLP, texto: "< 100.000/mm³ (critério de HELLP)", direcao: "menor", limite: 100_000 },
+    ],
+  },
+  {
+    chave: "tgoUiL",
+    rotulo: "TGO (AST)",
+    unidade: "UI/L",
+    papel: "organo",
+    regras: [
+      { fonte: RB_QUADRO1, texto: "> 40 UI/L (disfunção hepática)", direcao: "maior", limite: 40 },
+      { fonte: MS_HELLP, texto: "> 70 UI/L (critério de HELLP)", direcao: "maior", limite: 70 },
+    ],
+  },
+  {
+    chave: "tgpUiL",
+    rotulo: "TGP (ALT)",
+    unidade: "UI/L",
+    papel: "organo",
+    regras: [
+      { fonte: RB_QUADRO1, texto: "> 40 UI/L (disfunção hepática)", direcao: "maior", limite: 40 },
+      { fonte: MS_HELLP, texto: "> 70 UI/L (critério de HELLP)", direcao: "maior", limite: 70 },
+    ],
+  },
+  {
+    chave: "creatininaMgDl",
+    rotulo: "Creatinina",
+    unidade: "mg/dL",
+    papel: "organo",
+    regras: [
+      { fonte: RB_QUADRO1, texto: "≥ 1,0 mg/dL (disfunção renal)", direcao: "maior_igual", limite: 1.0 },
+      { fonte: MS_RENAL, texto: "≥ 1,2 mg/dL (insuficiência renal)", direcao: "maior_igual", limite: 1.2 },
+    ],
+  },
+  {
+    chave: "dhlUiL",
+    rotulo: "DHL",
+    unidade: "UI/L",
+    papel: "gravidade",
+    regras: [
+      { fonte: MS_HELLP, texto: "> 600 UI/L (hemólise, critério de HELLP)", direcao: "maior", limite: 600 },
+      { fonte: RB_HEMOLISE, texto: "> 600 UI/L (hemólise)", direcao: "maior", limite: 600 },
+    ],
+  },
+  {
+    chave: "bilirrubinaTotalMgDl",
+    rotulo: "Bilirrubina total",
+    unidade: "mg/dL",
+    papel: "gravidade",
+    regras: [{ fonte: MS_HELLP, texto: "> 1,2 mg/dL (hemólise, critério de HELLP)", direcao: "maior", limite: 1.2 }],
+  },
+];
+
+export const EXAMES_PROTEINURIA = {
+  proteinuria24h: [
+    { fonte: MS_PROTEINURIA, texto: "≥ 300 mg em 24 h", direcao: "maior_igual", limite: 300 },
+    { fonte: RB_QUADRO1, texto: "≥ 300 mg em 24 h", direcao: "maior_igual", limite: 300 },
+  ] as RegraExame[],
+  relacao: [
+    { fonte: MS_PROTEINURIA, texto: "relação proteína/creatinina ≥ 0,3", direcao: "maior_igual", limite: 0.3 },
+    { fonte: RB_QUADRO1, texto: "relação proteína/creatinina ≥ 0,3", direcao: "maior_igual", limite: 0.3 },
+  ] as RegraExame[],
+  /** Cruzes mínimas na fita: o Ministério aceita 1+; a RBEHG pede 2+. */
+  fita: [
+    { fonte: MS_PROTEINURIA, texto: "fita com pelo menos 1+", cruzes: 1 },
+    { fonte: RB_QUADRO1, texto: "fita com pelo menos 2+", cruzes: 2 },
+  ],
+};
+
+/** Restrição do crescimento fetal: peso < p10 (ACOG) ou < p3 (OMS), citados no Caderno do Ministério. */
+export const FONTE_DEFINICAO_RCF = pg(FONTES.MS, "125");
+export const PERCENTIL_CRESCIMENTO_ABAIXO_ESPERADO = 10;
+export const PERCENTIL_CRESCIMENTO_MUITO_ABAIXO = 3;
+export const FONTE_DOPPLER_UTERINO = RB_DOPPLER_UTERINO;
+export const FONTE_VITALIDADE_FETAL = RB_VITALIDADE;
+export const FONTE_COMPROMETIMENTO_PLACENTARIO = MS_DEF;
+export const FONTE_HELLP = MS_HELLP;
+export const FONTE_RENAL = MS_RENAL;
+
+// ============================================================
+// Pilar 4: manejo clínico na Atenção Primária
+// ============================================================
+
+const RB_ORIENTACAO = pg(FONTES.RBEHG, "22");
+const RB_SEGUIMENTO = pg(FONTES.RBEHG, "23");
+const RB_FARMACO = pg(FONTES.RBEHG, "25");
+const MS_CONDUTA = pg(FONTES.MS, "154");
+
+export const MANEJO_INTERNACAO: RecomendacaoComFonte[] = [
+  {
+    texto: "Recomenda-se sempre a internação quando houver suspeita ou confirmação de pré-eclâmpsia, para avaliar as condições materno-fetais e ajustar o tratamento.",
+    fonte: RB_SEGUIMENTO,
+  },
+  {
+    texto: "Todos os casos de pré-eclâmpsia com sinais de gravidade merecem internação hospitalar. A condução conservadora exige clínica estável, controle da PA, exames adequados e vitalidade fetal preservada.",
+    fonte: MS_CONDUTA,
+  },
+];
+
+export const MANEJO_ORIENTACOES: RecomendacaoComFonte[] = [
+  {
+    texto: "Orientar sobre os sinais de piora (cefaleia forte ou persistente, escotomas, fotofobia, visão borrada, dor epigástrica, confusão mental, dispneia) e para onde ir diante de qualquer um deles.",
+    fonte: RB_ORIENTACAO,
+  },
+  {
+    texto: "Dieta habitual, sem restrição de sal. Repouso absoluto não é necessário e está contraindicado pela RBEHG; reduzir a atividade física pode ser orientado.",
+    fonte: [RB_ORIENTACAO, MS_CONDUTA].join("; "),
+  },
+];
+
+export const MANEJO_FARMACOS: RecomendacaoComFonte[] = [
+  {
+    texto: "Anti-hipertensivo: o início é indicado quando a maioria das aferições passa de 140 ou 90 mmHg, com meta abaixo de 140 x 90. A escolha e a prescrição são do profissional.",
+    fonte: RB_FARMACO,
+  },
+  {
+    texto: "Não usar IECA, BRA II nem alisquireno na gestação (fetotoxicidade a partir do 2º trimestre).",
+    fonte: RB_FARMACO,
+  },
+];
+
+export const MANEJO_EXAMES_SEGUIMENTO: RecomendacaoComFonte = {
+  texto: "Exames de acompanhamento, em geral uma vez por semana: hemograma com plaquetas, DHL, bilirrubina total (ou haptoglobina), creatinina e TGO. Proteinúria não precisa ser repetida depois de confirmada.",
+  fonte: RB_SEGUIMENTO,
+};
+
+export const MANEJO_EXAMES_INVESTIGAR: RecomendacaoComFonte = {
+  texto: "Para esclarecer o diagnóstico: proteinúria (relação proteína/creatinina, urina de 24 h ou fita), plaquetas, creatinina e TGO ou TGP.",
+  fonte: [MS_PROTEINURIA, RB_QUADRO1].join("; "),
+};
+
+export const MANEJO_REAVALIAR: RecomendacaoComFonte = {
+  texto: "Reavaliar com nova aferição da PA e atenção aos sintomas: até 25% das gestantes com hipertensão gestacional apresentam sinais ou sintomas de pré-eclâmpsia e mudam de diagnóstico.",
+  fonte: RB_DEF,
+};
+
+export const MANEJO_ROTINA: RecomendacaoComFonte = {
+  texto: "Manter o pré-natal de rotina com aferição da PA em todas as consultas e orientação sobre sinais de alerta.",
+  fonte: RB_ORIENTACAO,
+};

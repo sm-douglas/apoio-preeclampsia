@@ -4,6 +4,8 @@ import type { ResultadoAvaliacao } from "../engine/types";
 import { MedidorRisco } from "./MedidorRisco";
 import { FONTES } from "../engine/rules-data";
 import { APP_VERSION } from "../version";
+import type { ReactNode } from "react";
+import type { RecomendacaoComFonte, ResultadoDiagnostico, ResultadoManejo } from "../engine/types";
 
 interface Props {
   resultado: ResultadoAvaliacao;
@@ -67,15 +69,6 @@ export function TelaResultado({ resultado, identificacaoCodificada, aoIniciarNov
         <p className="text-xs uppercase tracking-wide text-indeterminado-600 mb-0.5">Identificação codificada</p>
         <p className="font-mono text-[15px] font-medium text-clinico-900 mb-5">{identificacaoCodificada || "Não informada"}</p>
 
-        {/* Momento central: medidor de risco */}
-        <div className="flex flex-col items-center py-2 mb-5 border-b border-clinico-100">
-          <MedidorRisco nivel={resultado.classificacaoRisco.nivel} />
-          <p className={`mt-1 text-base font-semibold ${estilo.texto}`}>{estilo.rotulo}</p>
-          <p className="text-sm text-indeterminado-600 text-center max-w-sm mt-1">
-            {resultado.classificacaoRisco.justificativa}
-          </p>
-        </div>
-
         {/* Alerta de gravidade: destaque forte de propósito, é a única emergência real da tela */}
         {resultado.alertaGravidade.disparado && (
           <div className="mb-5 rounded-lg border-2 border-risco-alto-600 bg-risco-alto-50 p-4">
@@ -107,6 +100,54 @@ export function TelaResultado({ resultado, identificacaoCodificada, aoIniciarNov
           </div>
         )}
 
+
+        {/* Pilar 1 */}
+        <SecaoPilar numero={1} titulo="Prevenção da pré-eclâmpsia">
+        {/* Recomendações divergentes: sempre lado a lado, nunca uma escolhida */}
+        {resultado.classificacaoRisco.indicaProfilaxia ? (
+          <div className="mb-4">
+            <p className="text-sm font-medium text-clinico-900 mb-1.5">
+              Profilaxia indicada. Os protocolos divergem na dose.
+            </p>
+            <div className="grid sm:grid-cols-2 gap-2">
+              {resultado.classificacaoRisco.recomendacoesAAS?.map((r, i) => (
+                <div key={i} className="rounded-md border border-clinico-100 p-2.5">
+                  <p className="text-xs font-semibold text-clinico-800">AAS</p>
+                  <p className="text-sm text-clinico-700">{r.texto}</p>
+                  <p className="text-xs text-indeterminado-600 mt-1">{r.fonte}</p>
+                </div>
+              ))}
+            </div>
+            <div className="grid sm:grid-cols-2 gap-2 mt-2">
+              {resultado.classificacaoRisco.recomendacoesCalcio?.map((r, i) => (
+                <div key={i} className="rounded-md border border-clinico-100 p-2.5">
+                  <p className="text-xs font-semibold text-clinico-800">Cálcio</p>
+                  <p className="text-sm text-clinico-700">{r.texto}</p>
+                  <p className="text-xs text-indeterminado-600 mt-1">{r.fonte}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        ) : (
+          <p className="text-sm text-clinico-700">
+            {resultado.classificacaoRisco.nivel === "indeterminado"
+              ? "Profilaxia não definida: faltam dados para a classificação de risco."
+              : "Profilaxia farmacológica não indicada pelos fatores informados."}
+          </p>
+        )}
+        </SecaoPilar>
+
+        {/* Pilar 2 */}
+        <SecaoPilar numero={2} titulo="Estratificação de risco">
+        {/* Momento central: medidor de risco */}
+        <div className="flex flex-col items-center py-2 mb-5 border-b border-clinico-100">
+          <MedidorRisco nivel={resultado.classificacaoRisco.nivel} />
+          <p className={`mt-1 text-base font-semibold ${estilo.texto}`}>{estilo.rotulo}</p>
+          <p className="text-sm text-indeterminado-600 text-center max-w-sm mt-1">
+            {resultado.classificacaoRisco.justificativa}
+          </p>
+        </div>
+
         {/* Fatores identificados: faixa lateral em vez de fundo chapado */}
         {resultado.classificacaoRisco.fatoresAltoRiscoPresentes.length > 0 && (
           <div className={`mb-4 rounded-md border-l-4 ${estilo.faixa} bg-clinico-50/40 py-2.5 pl-4 pr-3`}>
@@ -134,32 +175,17 @@ export function TelaResultado({ resultado, identificacaoCodificada, aoIniciarNov
           </div>
         )}
 
-        {/* Recomendações divergentes: sempre lado a lado, nunca uma escolhida */}
-        {resultado.classificacaoRisco.indicaProfilaxia && (
-          <div className="mb-4">
-            <p className="text-sm font-medium text-clinico-900 mb-1.5">
-              Profilaxia indicada. Os protocolos divergem na dose.
-            </p>
-            <div className="grid sm:grid-cols-2 gap-2">
-              {resultado.classificacaoRisco.recomendacoesAAS?.map((r, i) => (
-                <div key={i} className="rounded-md border border-clinico-100 p-2.5">
-                  <p className="text-xs font-semibold text-clinico-800">AAS</p>
-                  <p className="text-sm text-clinico-700">{r.texto}</p>
-                  <p className="text-xs text-indeterminado-600 mt-1">{r.fonte}</p>
-                </div>
-              ))}
-            </div>
-            <div className="grid sm:grid-cols-2 gap-2 mt-2">
-              {resultado.classificacaoRisco.recomendacoesCalcio?.map((r, i) => (
-                <div key={i} className="rounded-md border border-clinico-100 p-2.5">
-                  <p className="text-xs font-semibold text-clinico-800">Cálcio</p>
-                  <p className="text-sm text-clinico-700">{r.texto}</p>
-                  <p className="text-xs text-indeterminado-600 mt-1">{r.fonte}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
+        </SecaoPilar>
+
+        {/* Pilar 3 */}
+        <SecaoPilar numero={3} titulo="Diagnóstico">
+          {resultado.diagnostico ? <BlocoDiagnostico d={resultado.diagnostico} /> : <SemDados />}
+        </SecaoPilar>
+
+        {/* Pilar 4 */}
+        <SecaoPilar numero={4} titulo="Manejo clínico na Atenção Primária">
+          {resultado.manejo ? <BlocoManejo m={resultado.manejo} /> : <SemDados />}
+        </SecaoPilar>
 
         {/* Avisos de completude: nunca escondidos */}
         {resultado.avisos.length > 0 && (
@@ -187,6 +213,131 @@ export function TelaResultado({ resultado, identificacaoCodificada, aoIniciarNov
           <p className="mt-1">Protocolos consultados: {Object.values(FONTES).join("; ")}.</p>
         </div>
       </div>
+    </div>
+  );
+}
+
+function SecaoPilar({ numero, titulo, children }: { numero: number; titulo: string; children: ReactNode }) {
+  return (
+    <section className="mb-6 break-inside-avoid">
+      <h3 className="flex items-center gap-2 text-[15px] font-semibold text-clinico-900 border-b border-clinico-100 pb-1.5 mb-3">
+        <span className="flex h-6 w-6 items-center justify-center rounded-full bg-clinico-700 text-xs text-white">{numero}</span>
+        {titulo}
+      </h3>
+      {children}
+    </section>
+  );
+}
+
+function SemDados() {
+  return (
+    <p className="text-sm text-indeterminado-600">
+      Este atendimento foi salvo antes da versão 1.1.0 e não tem esta parte da avaliação.
+    </p>
+  );
+}
+
+function ListaRecomendacoes({ titulo, itens }: { titulo: string; itens: RecomendacaoComFonte[] }) {
+  if (itens.length === 0) return null;
+  return (
+    <div className="mb-3">
+      <p className="text-sm font-medium text-clinico-900 mb-1.5">{titulo}</p>
+      <ul className="space-y-2">
+        {itens.map((r, i) => (
+          <li key={i} className="rounded-md border border-clinico-100 p-2.5">
+            <p className="text-sm text-clinico-700">{r.texto}</p>
+            <p className="text-xs text-indeterminado-600 mt-1">{r.fonte}</p>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+function BlocoDiagnostico({ d }: { d: ResultadoDiagnostico }) {
+  const gravidade = d.situacao === "criterios_pe_atingidos" || d.situacao === "criterios_pe_sobreposta_atingidos";
+  return (
+    <div>
+      <div className={"rounded-md border-l-4 py-2.5 pl-4 pr-3 mb-3 bg-clinico-50/40 " + (gravidade ? "border-risco-alto-600" : "border-indeterminado-600")}>
+        <p className="text-sm font-semibold text-clinico-900">{d.titulo}</p>
+        <p className="text-sm text-clinico-700 mt-1">{d.descricao}</p>
+        <p className="text-xs text-indeterminado-600 mt-1">Fonte: {d.fonte}</p>
+      </div>
+
+      {d.achados.length > 0 && (
+        <div className="mb-3">
+          <p className="text-sm font-medium text-clinico-900 mb-1.5">Exames informados</p>
+          <ul className="space-y-2">
+            {d.achados.map((a, i) => (
+              <li key={i} className="rounded-md border border-clinico-100 p-2.5">
+                <p className="text-sm text-clinico-900">
+                  <span className="font-medium">{a.rotulo}:</span> {a.valorTexto}
+                </p>
+                <ul className="mt-1 space-y-0.5">
+                  {a.criterios.map((c, j) => (
+                    <li key={j} className="text-xs text-clinico-700">
+                      {c.atingido ? "Atinge" : "Não atinge"} o critério {c.criterio}.{" "}
+                      <span className="text-indeterminado-600">{c.fonte}</span>
+                    </li>
+                  ))}
+                </ul>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {d.sinaisGravidade.length > 0 && (
+        <div className="mb-3 rounded-md border border-risco-alto-600 bg-risco-alto-50 p-2.5">
+          <p className="text-sm font-medium text-risco-alto-800 mb-1">Sinais de gravidade nos exames</p>
+          <ul className="text-sm text-risco-alto-800 space-y-0.5">
+            {d.sinaisGravidade.map((x, i) => (
+              <li key={i}>
+                {x.rotulo}. <span className="text-xs">{x.fonte}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {d.achadosImagem.length > 0 && (
+        <div className="mb-3">
+          <p className="text-sm font-medium text-clinico-900 mb-1">Ultrassom e Doppler</p>
+          <ul className="text-sm text-clinico-700 space-y-0.5">
+            {d.achadosImagem.map((x, i) => (
+              <li key={i} className={x.alerta ? "text-risco-moderado-800 font-medium" : undefined}>
+                {x.rotulo}. <span className="text-xs font-normal text-indeterminado-600">{x.fonte}</span>
+              </li>
+            ))}
+          </ul>
+          <p className="text-xs text-indeterminado-600 mt-1">
+            Os achados do ultrassom complementam a avaliação materna e não confirmam nem excluem pré-eclâmpsia sozinhos.
+          </p>
+        </div>
+      )}
+
+      {d.examesNaoInformados.length > 0 && (
+        <p className="text-sm text-risco-moderado-800 mb-3">
+          Exames não informados: {d.examesNaoInformados.join(", ")}. Não foram tratados como normais.
+        </p>
+      )}
+
+      <ListaRecomendacoes titulo="Observações" itens={d.observacoes} />
+    </div>
+  );
+}
+
+function BlocoManejo({ m }: { m: ResultadoManejo }) {
+  return (
+    <div>
+      <p className="text-sm font-semibold text-clinico-900 mb-3">{m.titulo}</p>
+      {m.nivel === "emergencia" && (
+        <p className="text-sm text-risco-alto-800 mb-3">As condutas de emergência estão no alerta de gravidade, no topo desta avaliação.</p>
+      )}
+      {m.nivel !== "emergencia" && <ListaRecomendacoes titulo="Condutas" itens={m.condutas} />}
+      <ListaRecomendacoes titulo="Orientações à gestante" itens={m.orientacoes} />
+      <ListaRecomendacoes titulo="Seguimento" itens={m.seguimento} />
+      <p className="text-xs text-indeterminado-600">A prescrição e a decisão final são do profissional.</p>
     </div>
   );
 }

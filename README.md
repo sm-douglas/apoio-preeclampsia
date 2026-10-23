@@ -9,7 +9,7 @@ assistenciais nacionais**, cada uma com documento e página de origem.
 - Motor de regras determinístico em TypeScript (sem IA em tempo de execução).
 - Regra central: "não informado" nunca é tratado como "não".
 
-Versão atual: **1.0.0** (ver `CHANGELOG.md`).
+Versão atual: **1.1.0** (ver `CHANGELOG.md`).
 
 ## Duas formas de usar
 

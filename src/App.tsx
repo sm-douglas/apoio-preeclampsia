@@ -4,7 +4,7 @@ import { avaliarGestante } from "./engine/engine";
 import { dadosIniciais } from "./state/dadosIniciais";
 import { salvarAtendimento } from "./db";
 import { FATORES_ALTO_RISCO, FATORES_RISCO_MODERADO } from "./engine/rules-data";
-import { erroFaixa, erroPressaoArterial } from "./validacao";
+import { calcularIdade, erroDataNascimento, erroFaixa, erroPressaoArterial } from "./validacao";
 import { IndicadorEtapas } from "./components/IndicadorEtapas";
 import { Cabecalho, type Tela } from "./components/Cabecalho";
 import { TelaAjustes } from "./components/TelaAjustes";
@@ -13,15 +13,18 @@ import { pinConfigurado } from "./seguranca";
 import { EtapaDados } from "./components/EtapaDados";
 import { EtapaFatoresRisco } from "./components/EtapaFatoresRisco";
 import { EtapaSinaisAlerta } from "./components/EtapaSinaisAlerta";
+import { EtapaExames } from "./components/EtapaExames";
 import { TelaResultado } from "./components/TelaResultado";
 import { Historico } from "./components/Historico";
 import { HistoricoLista } from "./components/HistoricoLista";
 
-const NOMES_ETAPAS = ["Dados", "Fatores de risco", "Sinais de alerta", "Resultado"];
+const NOMES_ETAPAS = ["Dados", "Fatores", "Sinais", "Exames", "Resultado"];
+const ETAPA_EXAMES = 4;
+const ETAPA_RESULTADO = 5;
 
 const CAMPOS_NUMERICOS_ETAPA_1: (keyof DadosGestante)[] = [
   "idadeGestacionalSemanas",
-  "idadeMaternaAnos",
+  "dataNascimento",
   "pesoKg",
   "alturaCm",
   "pressaoSistolicaMmHg",
@@ -34,6 +37,23 @@ const CAMPOS_ETAPA_2: (keyof DadosGestante)[] = [
 ];
 
 const CAMPOS_ETAPA_3: (keyof DadosGestante)[] = ["cefaleiaPersistente", "escotomas", "turvacaoVisual"];
+
+/** Campos numéricos opcionais da etapa de exames: só bloqueiam se tiverem valor implausível. */
+const CAMPOS_NUMERICOS_EXAMES: (keyof DadosGestante)[] = [
+  "plaquetasMm3",
+  "tgoUiL",
+  "tgpUiL",
+  "creatininaMgDl",
+  "dhlUiL",
+  "bilirrubinaTotalMgDl",
+  "proteinuria24hMg",
+  "relacaoProteinaCreatinina",
+  "usgIgSemanas",
+  "usgIgDias",
+  "usgPesoFetalG",
+  "usgPercentilPeso",
+  "dopplerUterinoIP",
+];
 
 export default function App() {
   const [etapa, setEtapa] = useState(1);
@@ -73,7 +93,15 @@ export default function App() {
    * "o profissional decidiu que não sabe" de "o campo nunca foi respondido".
    */
   function atualizarDados(parcial: Partial<DadosGestante>) {
-    setDados((atual) => ({ ...atual, ...parcial }));
+    setDados((atual) => {
+      const novo = { ...atual, ...parcial };
+      // A idade materna sempre vem da data de nascimento (calculada na data de hoje).
+      if ("dataNascimento" in parcial) {
+        const ok = erroDataNascimento(novo.dataNascimento) == null;
+        novo.idadeMaternaAnos = ok ? calcularIdade(novo.dataNascimento) : null;
+      }
+      return novo;
+    });
     setTocados((atual) => {
       const novo = new Set(atual);
       for (const chave of Object.keys(parcial)) novo.add(chave as keyof DadosGestante);
@@ -103,9 +131,10 @@ export default function App() {
   function camposNumericosInvalidosOuPendentes(chaves: (keyof DadosGestante)[]): number {
     return chaves.filter((c) => {
       if (!tocados.has(c)) return true;
-      const valor = dados[c] as number | null;
+      const valor = dados[c] as number | string | null;
       if (valor == null) return false; // marcado como "não informado" é válido
-      return erroFaixa(c, valor) != null;
+      if (c === "dataNascimento") return erroDataNascimento(valor as string) != null;
+      return erroFaixa(c, valor as number) != null;
     }).length;
   }
 
@@ -122,14 +151,19 @@ export default function App() {
   const faltantesEtapa2 = camposFaltantes(CAMPOS_ETAPA_2);
   const faltantesEtapa3 = camposFaltantes(CAMPOS_ETAPA_3);
 
-  const faltantesEtapaAtual = etapa === 1 ? faltantesEtapa1 : etapa === 2 ? faltantesEtapa2 : faltantesEtapa3;
+  const examesImplausiveis = CAMPOS_NUMERICOS_EXAMES.filter(
+    (c) => dados[c] != null && erroFaixa(c, dados[c] as number) != null
+  ).length;
+
+  const faltantesEtapaAtual =
+    etapa === 1 ? faltantesEtapa1 : etapa === 2 ? faltantesEtapa2 : etapa === 3 ? faltantesEtapa3 : examesImplausiveis;
   const etapaCompleta = faltantesEtapaAtual === 0;
 
   async function finalizarAtendimento() {
     const resultadoCalculado = avaliarGestante(dados);
     setResultado(resultadoCalculado);
     setErroSalvar(false);
-    setEtapa(4);
+    setEtapa(ETAPA_RESULTADO);
     if (dados.identificacaoCodificada.trim()) {
       try {
         await salvarAtendimento(dados.identificacaoCodificada.trim(), dados, resultadoCalculado);
@@ -141,7 +175,7 @@ export default function App() {
   }
 
   function iniciarNovoAtendimento() {
-    if (tocados.size > 0 && etapa !== 4) {
+    if (tocados.size > 0 && etapa !== ETAPA_RESULTADO) {
       const confirmar = window.confirm(
         "Há dados preenchidos neste atendimento que ainda não foram calculados. Descartar e começar um novo?"
       );
@@ -194,7 +228,7 @@ export default function App() {
           <>
             <IndicadorEtapas etapaAtual={etapa} etapas={NOMES_ETAPAS} />
 
-            {etapa < 4 && (
+            {etapa < ETAPA_RESULTADO && (
             <div className="rounded-xl border border-clinico-100 bg-white p-6 shadow-sm shadow-clinico-900/5">
               {etapa === 1 && (
                 <EtapaDados
@@ -206,17 +240,18 @@ export default function App() {
               )}
               {etapa === 2 && <EtapaFatoresRisco dados={dados} tocados={tocados} aoAtualizar={atualizarDados} />}
               {etapa === 3 && <EtapaSinaisAlerta dados={dados} tocados={tocados} aoAtualizar={atualizarDados} />}
+              {etapa === ETAPA_EXAMES && <EtapaExames dados={dados} tocados={tocados} aoAtualizar={atualizarDados} />}
             </div>
             )}
 
-            {etapa === 4 && erroSalvar && (
+            {etapa === ETAPA_RESULTADO && erroSalvar && (
               <p role="alert" className="mb-3 rounded-md border border-risco-moderado-500 bg-risco-moderado-50 p-3 text-sm text-risco-moderado-800">
                 Não foi possível salvar este atendimento no histórico do aparelho (armazenamento bloqueado ou
                 cheio). O resultado abaixo continua válido. Use "Salvar como PDF" se precisar guardá-lo.
               </p>
             )}
 
-            {etapa === 4 && resultado && (
+            {etapa === ETAPA_RESULTADO && resultado && (
               <TelaResultado
                 resultado={resultado}
                 identificacaoCodificada={dados.identificacaoCodificada}
@@ -224,12 +259,18 @@ export default function App() {
               />
             )}
 
-            {etapa < 4 && (
+            {etapa < ETAPA_RESULTADO && (
               <div className="mt-5 no-print">
-                {!etapaCompleta && (
+                {!etapaCompleta && etapa < ETAPA_EXAMES && (
                   <p className="text-xs text-risco-moderado-600 mb-2 text-right">
                     Faltam {faltantesEtapaAtual} {faltantesEtapaAtual === 1 ? "campo" : "campos"}. Preencha ou
                     marque "Não informado"
+                  </p>
+                )}
+                {!etapaCompleta && etapa === ETAPA_EXAMES && (
+                  <p className="text-xs text-risco-alto-600 mb-2 text-right">
+                    {examesImplausiveis} {examesImplausiveis === 1 ? "valor" : "valores"} fora do esperado. Confira
+                    ou apague o campo.
                   </p>
                 )}
                 <div className="flex justify-between items-center">
@@ -241,7 +282,7 @@ export default function App() {
                     Voltar
                   </button>
 
-                  {etapa < 3 ? (
+                  {etapa < ETAPA_EXAMES ? (
                     <button
                       onClick={() => etapaCompleta && setEtapa((e) => e + 1)}
                       disabled={!etapaCompleta}

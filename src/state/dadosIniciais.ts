@@ -11,6 +11,7 @@ export function dadosIniciais(): DadosGestante {
   return {
     identificacaoCodificada: "",
     idadeGestacionalSemanas: null,
+    dataNascimento: null,
     idadeMaternaAnos: null,
     pesoKg: null,
     alturaCm: null,
@@ -35,5 +36,26 @@ export function dadosIniciais(): DadosGestante {
     cefaleiaPersistente: "nao_informado",
     escotomas: "nao_informado",
     turvacaoVisual: "nao_informado",
+
+    plaquetasMm3: null,
+    tgoUiL: null,
+    tgpUiL: null,
+    creatininaMgDl: null,
+    dhlUiL: null,
+    bilirrubinaTotalMgDl: null,
+    proteinuria24hMg: null,
+    relacaoProteinaCreatinina: null,
+    proteinuriaFita: "nao_informado",
+
+    usgDataExame: null,
+    usgIgSemanas: null,
+    usgIgDias: null,
+    usgPesoFetalG: null,
+    usgPercentilPeso: null,
+    usgLiquidoAmniotico: "nao_informado",
+    dopplerUterino: "nao_realizado",
+    dopplerUterinoIP: null,
+    dopplerUmbilical: "nao_realizado",
+    dopplerUmbilicalDiastole: "nao_informado",
   };
 }

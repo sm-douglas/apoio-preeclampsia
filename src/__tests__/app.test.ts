@@ -64,7 +64,7 @@ const registroValido = () => ({
 });
 
 describe("validação do backup", () => {
-  const arquivo = (atendimentos: unknown) => ({ formato: FORMATO_BACKUP, versaoApp: "1.0.0", exportadoEmISO: "x", atendimentos });
+  const arquivo = (atendimentos: unknown) => ({ formato: FORMATO_BACKUP, versaoApp: "1.1.0", exportadoEmISO: "x", atendimentos });
 
   it("aceita um backup válido", () => {
     const r = validarBackup(arquivo([registroValido()]));

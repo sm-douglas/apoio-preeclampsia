@@ -3,13 +3,22 @@
 ## Fazer uma avaliação
 
 1. **Dados:** digite a identificação codificada (ex.: GEST-0001, nunca o nome), idade gestacional,
-   idade, peso, altura e pressão arterial. Se um dado não existe, marque **Não informado** (clicar de
+   data de nascimento (a idade é calculada sozinha), peso, altura (o IMC aparece na hora) e pressão
+   arterial. Se um dado não existe, marque **Não informado** (clicar de
    novo desmarca).
 2. **Fatores de risco:** responda Sim, Não ou Não informado em cada item.
 3. **Sinais de alerta:** cefaleia persistente, escotomas, turvação visual.
-4. **Calcular avaliação.** O botão só libera quando tudo foi respondido ou marcado como não informado.
+4. **Exames (opcional):** laboratório, proteinúria e ultrassom com Doppler (9 campos). Preencha só o que existir; em
+   branco ou "não realizado" vale como não informado, nunca como normal. Do ultrassom, pode registrar só a
+   conclusão do laudo. A classificação de risco não depende dos exames.
+5. **Calcular avaliação.** O botão só libera quando tudo o que é obrigatório foi respondido ou marcado como
+   não informado.
 
 ## Ler o resultado
+
+O resultado segue os 4 pilares: **1. Prevenção**, **2. Estratificação de risco**, **3. Diagnóstico** e
+**4. Manejo clínico na Atenção Primária**. No pilar 3, cada exame é avaliado em cada protocolo, porque os
+limites do Ministério da Saúde e da RBEHG divergem em alguns exames.
 
 - **Nível de risco** e o motivo.
 - **Alerta de gravidade** (quando existe): dado identificado, motivo, recomendações com fonte e se há

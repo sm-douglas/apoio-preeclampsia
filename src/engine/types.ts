@@ -15,6 +15,16 @@ export type TriState = "sim" | "nao" | "nao_informado";
 
 export type NivelRisco = "alto" | "moderado" | "baixo" | "indeterminado";
 
+/** Proteinúria em fita (urina de amostra isolada). */
+export type FitaProteinuria = "nao_informado" | "negativo" | "1+" | "2+" | "3+" | "4+";
+
+/** Conclusão do laudo de um Doppler. "nao_realizado" nunca é lido como normal. */
+export type ResultadoDoppler = "nao_realizado" | "normal" | "alterado";
+/** Líquido amniótico no laudo. */
+export type LiquidoAmniotico = "nao_informado" | "normal" | "diminuido" | "aumentado";
+/** Fluxo diastólico da artéria umbilical ao Doppler. */
+export type DiastoleUmbilical = "nao_informado" | "presente" | "ausente" | "reversa";
+
 export type ClassificacaoPA =
   | "normal"
   | "hipertensao"
@@ -41,6 +51,9 @@ export interface DadosGestante {
   identificacaoCodificada: string;
 
   idadeGestacionalSemanas: number | null;
+  /** Data de nascimento (AAAA-MM-DD). A idade materna é calculada a partir dela. */
+  dataNascimento: string | null;
+  /** Calculada pelo app a partir da data de nascimento (ou, em registros antigos, digitada). */
   idadeMaternaAnos: number | null;
 
   pesoKg: number | null;
@@ -73,6 +86,42 @@ export interface DadosGestante {
   cefaleiaPersistente: TriState;
   escotomas: TriState;
   turvacaoVisual: TriState;
+
+  // --- Exames laboratoriais (TODOS OPCIONAIS) ---
+  // Na APS os exames muitas vezes não estão disponíveis. Nenhum deles
+  // entra na classificação de risco; servem ao diagnóstico (pilar 3).
+  // Vazio = não informado, nunca "normal".
+  plaquetasMm3: number | null;
+  tgoUiL: number | null;
+  tgpUiL: number | null;
+  creatininaMgDl: number | null;
+  dhlUiL: number | null;
+  bilirrubinaTotalMgDl: number | null;
+  proteinuria24hMg: number | null;
+  /** Relação proteína/creatinina em amostra isolada de urina (mg/mg). */
+  relacaoProteinaCreatinina: number | null;
+  proteinuriaFita: FitaProteinuria;
+
+  // --- Ultrassonografia obstétrica com Doppler (TODOS OPCIONAIS; estrutura da pesquisadora) ---
+  /** 1. Data do exame (AAAA-MM-DD). */
+  usgDataExame: string | null;
+  /** 2. Idade gestacional no exame: semanas e dias. */
+  usgIgSemanas: number | null;
+  usgIgDias: number | null;
+  /** 3. Peso fetal estimado, em gramas. */
+  usgPesoFetalG: number | null;
+  /** 4. Percentil do peso fetal. */
+  usgPercentilPeso: number | null;
+  /** 5. Líquido amniótico. */
+  usgLiquidoAmniotico: LiquidoAmniotico;
+  /** 6. Doppler das artérias uterinas. */
+  dopplerUterino: ResultadoDoppler;
+  /** 7. Índice de pulsatilidade médio das artérias uterinas. */
+  dopplerUterinoIP: number | null;
+  /** 8. Doppler da artéria umbilical. */
+  dopplerUmbilical: ResultadoDoppler;
+  /** 9. Fluxo diastólico da artéria umbilical. */
+  dopplerUmbilicalDiastole: DiastoleUmbilical;
 
   observacoesLivres?: string;
 }
@@ -110,11 +159,76 @@ export interface ResultadoAlertaGravidade {
   necessitaEncaminhamento: boolean;
 }
 
+/** Critério de uma fonte aplicado a um exame informado. */
+export interface CriterioPorFonte {
+  fonte: string;
+  criterio: string;
+  atingido: boolean;
+}
+
+/** Um exame informado, avaliado fonte por fonte (as fontes divergem em alguns limites). */
+export interface AchadoExame {
+  rotulo: string;
+  valorTexto: string;
+  criterios: CriterioPorFonte[];
+  /** Verdadeiro se qualquer fonte considera o valor alterado. */
+  alteradoEmAlgumaFonte: boolean;
+}
+
+export interface SinalGravidade {
+  rotulo: string;
+  fonte: string;
+}
+
+export interface AchadoImagem {
+  rotulo: string;
+  fonte: string;
+  /** Verdadeiro para achado que deve ser sinalizado (amarelo na tela). */
+  alerta: boolean;
+}
+
+export type SituacaoDiagnostica =
+  | "pa_nao_informada"
+  | "sem_hipertensao"
+  | "antes_20_semanas"
+  | "criterios_pe_atingidos"
+  | "criterios_pe_sobreposta_atingidos"
+  | "hipertensao_sem_criterio_pe"
+  | "pe_nao_excluida";
+
+export interface ResultadoDiagnostico {
+  situacao: SituacaoDiagnostica;
+  titulo: string;
+  descricao: string;
+  fonte: string;
+  achados: AchadoExame[];
+  sinaisGravidade: SinalGravidade[];
+  /** Exames úteis ao diagnóstico que não foram informados (nunca lidos como normais). */
+  examesNaoInformados: string[];
+  /** Achados do ultrassom/Doppler. Complementam a avaliação materna, nunca decidem sozinhos. */
+  achadosImagem: AchadoImagem[];
+  observacoes: RecomendacaoComFonte[];
+}
+
+export type NivelConduta = "emergencia" | "internacao_encaminhamento" | "investigar" | "acompanhar" | "rotina";
+
+export interface ResultadoManejo {
+  nivel: NivelConduta;
+  titulo: string;
+  condutas: RecomendacaoComFonte[];
+  orientacoes: RecomendacaoComFonte[];
+  seguimento: RecomendacaoComFonte[];
+}
+
 export interface ResultadoAvaliacao {
   imc: number | null;
   classificacaoPA: ClassificacaoPA;
   classificacaoRisco: ResultadoClassificacaoRisco;
   alertaGravidade: ResultadoAlertaGravidade;
+  /** Pilar 3. Ausente em atendimentos salvos antes da versão 1.1.0. */
+  diagnostico?: ResultadoDiagnostico;
+  /** Pilar 4. Ausente em atendimentos salvos antes da versão 1.1.0. */
+  manejo?: ResultadoManejo;
   /** Avisos de completude/confiabilidade da avaliação, nunca omitidos
    *  quando há dado essencial faltante. */
   avisos: string[];

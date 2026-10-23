@@ -13,6 +13,8 @@ interface Props {
   aoAlternarNaoInformado: () => void;
   placeholder?: string;
   icone?: ReactNode;
+  /** Campo opcional: em branco vale como não informado, sem pendência nem botão. */
+  opcional?: boolean;
 }
 
 /**
@@ -35,6 +37,7 @@ export function CampoNumerico({
   aoAlternarNaoInformado,
   placeholder,
   icone,
+  opcional = false,
 }: Props) {
   const idCampo = useId();
   const [texto, setTexto] = useState(valor == null ? "" : String(valor));
@@ -50,8 +53,8 @@ export function CampoNumerico({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [valor, naoInformadoAtivo]);
 
-  const temErro = tocado && !naoInformadoAtivo && !!erro;
-  const pendente = !tocado;
+  const temErro = opcional ? valor != null && !!erro : tocado && !naoInformadoAtivo && !!erro;
+  const pendente = !opcional && !tocado;
 
   return (
     <div className="py-2">
@@ -84,6 +87,7 @@ export function CampoNumerico({
           }
         />
         {unidade && <span className="text-xs text-indeterminado-600">{unidade}</span>}
+        {!opcional && (
         <button
           type="button"
           onClick={aoAlternarNaoInformado}
@@ -99,6 +103,7 @@ export function CampoNumerico({
           <HelpCircle size={13} />
           Não informado
         </button>
+        )}
       </div>
       {pendente && (
         <p className="text-xs text-risco-moderado-600 mt-1">Obrigatório: preencha ou marque "Não informado"</p>

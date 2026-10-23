@@ -14,10 +14,13 @@ import type {
   NivelRisco,
   ResultadoAlertaGravidade,
   ResultadoAvaliacao,
+  SinalGravidade,
   ResultadoClassificacaoRisco,
   TriState,
 } from "./types";
 import * as R from "./rules-data";
+import { avaliarDiagnostico } from "./diagnostico";
+import { avaliarManejo } from "./manejo";
 
 export function calcularIMC(pesoKg: number | null, alturaCm: number | null): number | null {
   if (pesoKg == null || alturaCm == null || alturaCm <= 0) return null;
@@ -131,7 +134,8 @@ export function avaliarClassificacaoRisco(
 
 export function avaliarAlertaGravidade(
   dados: DadosGestante,
-  classificacaoPA: ClassificacaoPA
+  classificacaoPA: ClassificacaoPA,
+  sinaisExtras: SinalGravidade[] = []
 ): ResultadoAlertaGravidade {
   const sinaisNeurologicos: string[] = [];
   if (dados.cefaleiaPersistente === "sim") sinaisNeurologicos.push("cefaleia persistente");
@@ -141,13 +145,16 @@ export function avaliarAlertaGravidade(
   const temSinalNeurologico = sinaisNeurologicos.length > 0;
   const temPAGrave = classificacaoPA === "hipertensao_grave";
 
-  if (!temSinalNeurologico && !temPAGrave) {
+  const temSinalExtra = sinaisExtras.length > 0;
+
+  if (!temSinalNeurologico && !temPAGrave && !temSinalExtra) {
     return { disparado: false, necessitaEncaminhamento: false };
   }
 
   const partesDado = [
     temPAGrave ? `PA ≥ ${R.LIMIAR_PA_GRAVE.sistolica}/${R.LIMIAR_PA_GRAVE.diastolica} mmHg` : null,
     temSinalNeurologico ? `Sinais neurológicos: ${sinaisNeurologicos.join(", ")}` : null,
+    temSinalExtra ? `Exames: ${sinaisExtras.map((s) => s.rotulo).join("; ")}` : null,
   ].filter((v): v is string => v !== null);
 
   return {
@@ -155,11 +162,17 @@ export function avaliarAlertaGravidade(
     dadoIdentificado: partesDado.join(" e "),
     motivo: temPAGrave
       ? "Hipertensão grave (PA ≥ 160/110 mmHg)."
-      : `Sinais neurológicos de iminência de eclâmpsia. Critério: ${R.FONTE_CRITERIO_SINAIS}.`,
+      : temSinalNeurologico
+      ? `Sinais neurológicos de iminência de eclâmpsia. Critério: ${R.FONTE_CRITERIO_SINAIS}.`
+      : `Alteração de exame com sinal de gravidade. Fonte: ${[...new Set(sinaisExtras.map((s) => s.fonte))].join("; ")}.`,
     recomendacoes: [
       ...(temPAGrave ? [R.REC_CONFIRMAR_PA_GRAVE] : []),
       R.REC_ENCAMINHAMENTO_GRAVIDADE,
-      temSinalNeurologico ? R.REC_MGSO4_IMINENCIA : R.REC_MGSO4_PA_GRAVE,
+      ...(temSinalNeurologico
+        ? [R.REC_MGSO4_IMINENCIA]
+        : temPAGrave
+        ? [R.REC_MGSO4_PA_GRAVE]
+        : [R.REC_MGSO4_GRAVIDADE_EXAMES]),
     ],
     necessitaEncaminhamento: true,
   };
@@ -170,7 +183,9 @@ export function avaliarGestante(dados: DadosGestante): ResultadoAvaliacao {
   const imc = calcularIMC(dados.pesoKg, dados.alturaCm);
   const classificacaoPA = classificarPA(dados.pressaoSistolicaMmHg, dados.pressaoDiastolicaMmHg);
   const classificacaoRisco = avaliarClassificacaoRisco(dados, imc);
-  const alertaGravidade = avaliarAlertaGravidade(dados, classificacaoPA);
+  const diagnostico = avaliarDiagnostico(dados, classificacaoPA);
+  const alertaGravidade = avaliarAlertaGravidade(dados, classificacaoPA, diagnostico.sinaisGravidade);
+  const manejo = avaliarManejo(diagnostico, alertaGravidade);
 
   const avisos: string[] = [];
   if (classificacaoRisco.camposNaoInformados.length > 0) {
@@ -183,5 +198,5 @@ export function avaliarGestante(dados: DadosGestante): ResultadoAvaliacao {
     avisos.push("Pressão arterial não informada. A avaliação de gravidade pela PA não foi feita.");
   }
 
-  return { imc, classificacaoPA, classificacaoRisco, alertaGravidade, avisos };
+  return { imc, classificacaoPA, classificacaoRisco, alertaGravidade, diagnostico, manejo, avisos };
 }
