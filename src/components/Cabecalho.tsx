@@ -1,6 +1,6 @@
-import { History, Lock, Settings, WifiOff } from "lucide-react";
+import { History, Lock, Pill, Settings, WifiOff } from "lucide-react";
 
-export type Tela = "avaliacao" | "historico" | "ajustes";
+export type Tela = "avaliacao" | "historico" | "ajustes" | "medicamentos";
 
 interface Props {
   tela: Tela;
@@ -46,6 +46,10 @@ export function Cabecalho({ tela, aoMudarTela, pinAtivo, aoBloquear }: Props) {
             <WifiOff size={14} strokeWidth={2} />
             funciona offline
           </span>
+          <button onClick={() => alternar("medicamentos")} aria-label="Medicamentos" aria-pressed={tela === "medicamentos"} className={BTN}>
+            <Pill size={16} strokeWidth={2} />
+            <span className="hidden sm:inline">{tela === "medicamentos" ? "Fechar" : "Medicamentos"}</span>
+          </button>
           <button onClick={() => alternar("historico")} aria-label="Histórico" aria-pressed={tela === "historico"} className={BTN}>
             <History size={16} strokeWidth={2} />
             <span className="hidden sm:inline">{tela === "historico" ? "Fechar" : "Histórico"}</span>

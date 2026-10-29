@@ -2,6 +2,7 @@ import { useState } from "react";
 import { AlertTriangle, Printer, RotateCcw, FileWarning } from "lucide-react";
 import type { ResultadoAvaliacao } from "../engine/types";
 import { MedidorRisco } from "./MedidorRisco";
+import { MedicamentosAPS } from "./MedicamentosAPS";
 import { FONTES } from "../engine/rules-data";
 import { APP_VERSION } from "../version";
 import type { ReactNode } from "react";
@@ -97,6 +98,7 @@ export function TelaResultado({ resultado, identificacaoCodificada, aoIniciarNov
                 <dd className="inline">{resultado.alertaGravidade.necessitaEncaminhamento ? "Sim" : "Não"}</dd>
               </div>
             </dl>
+            <MedicamentosAPS foco="emergencia" />
           </div>
         )}
 
@@ -185,6 +187,9 @@ export function TelaResultado({ resultado, identificacaoCodificada, aoIniciarNov
         {/* Pilar 4 */}
         <SecaoPilar numero={4} titulo="Manejo clínico na Atenção Primária">
           {resultado.manejo ? <BlocoManejo m={resultado.manejo} /> : <SemDados />}
+          {!resultado.alertaGravidade.disparado && resultado.classificacaoPA === "hipertensao" && (
+            <MedicamentosAPS foco="manutencao" />
+          )}
         </SecaoPilar>
 
         {/* Avisos de completude: nunca escondidos */}

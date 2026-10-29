@@ -26,8 +26,14 @@ export const db = new BancoLocal();
 export async function salvarAtendimento(
   identificacaoCodificada: string,
   dados: DadosGestante,
-  resultado: ResultadoAvaliacao
+  resultado: ResultadoAvaliacao,
+  /** Se o profissional voltou, corrigiu um dado e calculou de novo, atualiza o mesmo atendimento em vez de criar outro. */
+  idExistente?: number | null
 ): Promise<number> {
+  if (idExistente != null) {
+    const atualizados = await db.atendimentos.update(idExistente, { identificacaoCodificada, dados, resultado });
+    if (atualizados > 0) return idExistente;
+  }
   return db.atendimentos.add({
     identificacaoCodificada,
     dataHoraISO: new Date().toISOString(),

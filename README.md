@@ -9,7 +9,7 @@ assistenciais nacionais**, cada uma com documento e página de origem.
 - Motor de regras determinístico em TypeScript (sem IA em tempo de execução).
 - Regra central: "não informado" nunca é tratado como "não".
 
-Versão atual: **1.1.0** (ver `CHANGELOG.md`).
+Versão atual: **1.2.0** (ver `CHANGELOG.md`).
 
 ## Duas formas de usar
 
@@ -27,7 +27,7 @@ Também há `app-web-<versão>.zip` em Releases: é a versão web já compilada,
 ```bash
 npm install        # uma vez
 npm run dev        # desenvolvimento, http://localhost:5173
-npm test           # testes do motor, PIN, backup (61 testes)
+npm test           # testes do motor, PIN, backup (119 testes)
 npm run lint       # análise estática
 npm run build      # gera a pasta dist/ (app + service worker)
 npm run preview    # serve a dist/ para testar o modo offline
@@ -47,7 +47,7 @@ npm run desktop:build  # gera o .exe portátil em release/ (rode no Windows)
 | `src/backup.ts`, `src/db.ts` | Backup JSON e banco local (Dexie). |
 | `vite.config.ts` | Gera o `sw.js` (offline) no build. |
 | `electron/` | Casca de desktop (janela, salvar PDF). |
-| `.github/workflows/` | `release.yml` gera o .exe; `deploy.yml` publica no Pages (opcional). |
+| `.github/workflows/` | `release.yml` gera o .exe e o zip da versão web ao enviar uma tag `v*`. |
 | `docs/` | Manual de uso, lista de validação, guia passo a passo. |
 
 ## Protocolos usados

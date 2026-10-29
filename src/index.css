@@ -80,3 +80,20 @@
     background: white !important;
   }
 }
+
+/* Impressão da planilha de controle do sulfato de magnésio (só a planilha) */
+@media print {
+  body.imprimindo-planilha * {
+    visibility: hidden;
+  }
+  body.imprimindo-planilha .planilha-print,
+  body.imprimindo-planilha .planilha-print * {
+    visibility: visible;
+  }
+  body.imprimindo-planilha .planilha-print {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+  }
+}

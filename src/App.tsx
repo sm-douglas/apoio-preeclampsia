@@ -5,8 +5,9 @@ import { dadosIniciais } from "./state/dadosIniciais";
 import { salvarAtendimento } from "./db";
 import { FATORES_ALTO_RISCO, FATORES_RISCO_MODERADO } from "./engine/rules-data";
 import { calcularIdade, erroDataNascimento, erroFaixa, erroPressaoArterial } from "./validacao";
-import { IndicadorEtapas } from "./components/IndicadorEtapas";
+import { IndicadorEtapas, type SituacaoEtapa } from "./components/IndicadorEtapas";
 import { Cabecalho, type Tela } from "./components/Cabecalho";
+import { MedicamentosAPS } from "./components/MedicamentosAPS";
 import { TelaAjustes } from "./components/TelaAjustes";
 import { TelaBloqueio } from "./components/TelaBloqueio";
 import { pinConfigurado } from "./seguranca";
@@ -65,6 +66,8 @@ export default function App() {
   const [bloqueado, setBloqueado] = useState(() => pinConfigurado());
   const [gestanteHistorico, setGestanteHistorico] = useState<string | null>(null);
   const [erroSalvar, setErroSalvar] = useState(false);
+  const [atendimentoId, setAtendimentoId] = useState<number | null>(null);
+  const [vistas, setVistas] = useState<Set<number>>(() => new Set([1]));
 
   // Bloqueio automático após 5 minutos sem interação (só com PIN ativo).
   useEffect(() => {
@@ -87,12 +90,20 @@ export default function App() {
     window.scrollTo({ top: 0 });
   }, [etapa]);
 
+  /** Troca de etapa e registra que ela foi aberta (usado para marcar etapas pendentes no indicador). */
+  function mudarEtapa(numero: number) {
+    setEtapa(numero);
+    setVistas((atual) => (atual.has(numero) ? atual : new Set(atual).add(numero)));
+  }
+
   /**
    * Toda atualização de campo marca esse campo como "tocado", inclusive
    * quando o valor vira null (ex.: botão "Não informado"). É isso que distingue
    * "o profissional decidiu que não sabe" de "o campo nunca foi respondido".
    */
   function atualizarDados(parcial: Partial<DadosGestante>) {
+    // Qualquer mudança nos dados invalida o resultado já calculado: é preciso calcular de novo.
+    setResultado(null);
     setDados((atual) => {
       const novo = { ...atual, ...parcial };
       // A idade materna sempre vem da data de nascimento (calculada na data de hoje).
@@ -159,14 +170,37 @@ export default function App() {
     etapa === 1 ? faltantesEtapa1 : etapa === 2 ? faltantesEtapa2 : etapa === 3 ? faltantesEtapa3 : examesImplausiveis;
   const etapaCompleta = faltantesEtapaAtual === 0;
 
+  // Etapas 1 a 3 têm campos obrigatórios; a etapa 4 (exames) é opcional. O cálculo exige as obrigatórias.
+  const pendenciasPorEtapa = [
+    { numero: 1, nome: NOMES_ETAPAS[0], faltam: faltantesEtapa1 },
+    { numero: 2, nome: NOMES_ETAPAS[1], faltam: faltantesEtapa2 },
+    { numero: 3, nome: NOMES_ETAPAS[2], faltam: faltantesEtapa3 },
+  ].filter((e) => e.faltam > 0);
+  const podeCalcular = pendenciasPorEtapa.length === 0 && examesImplausiveis === 0;
+
+  const situacoesEtapas: SituacaoEtapa[] = [
+    faltantesEtapa1 === 0 ? "completa" : vistas.has(1) ? "pendente" : "nao_visitada",
+    faltantesEtapa2 === 0 ? "completa" : vistas.has(2) ? "pendente" : "nao_visitada",
+    faltantesEtapa3 === 0 ? "completa" : vistas.has(3) ? "pendente" : "nao_visitada",
+    examesImplausiveis > 0 ? "pendente" : vistas.has(ETAPA_EXAMES) ? "completa" : "nao_visitada",
+    resultado ? "completa" : "nao_visitada",
+  ];
+  const etapasHabilitadas = [true, true, true, true, resultado != null];
+
+  function irParaEtapa(numero: number) {
+    if (numero === ETAPA_RESULTADO && !resultado) return;
+    mudarEtapa(numero);
+  }
+
   async function finalizarAtendimento() {
     const resultadoCalculado = avaliarGestante(dados);
     setResultado(resultadoCalculado);
     setErroSalvar(false);
-    setEtapa(ETAPA_RESULTADO);
+    mudarEtapa(ETAPA_RESULTADO);
     if (dados.identificacaoCodificada.trim()) {
       try {
-        await salvarAtendimento(dados.identificacaoCodificada.trim(), dados, resultadoCalculado);
+        const id = await salvarAtendimento(dados.identificacaoCodificada.trim(), dados, resultadoCalculado, atendimentoId);
+        setAtendimentoId(id);
       } catch {
         // O resultado continua na tela; só o histórico local não foi gravado.
         setErroSalvar(true);
@@ -185,6 +219,8 @@ export default function App() {
     setTocados(new Set());
     setResultado(null);
     setErroSalvar(false);
+    setAtendimentoId(null);
+    setVistas(new Set([1]));
     setEtapa(1);
   }
 
@@ -203,7 +239,12 @@ export default function App() {
       />
 
       <main className="mx-auto max-w-2xl px-4 py-6">
-        {tela === "ajustes" ? (
+        {tela === "medicamentos" ? (
+          <div>
+            <h2 className="text-lg font-medium text-clinico-900 mb-1">Consulta de medicamentos</h2>
+            <MedicamentosAPS foco="todos" />
+          </div>
+        ) : tela === "ajustes" ? (
           <TelaAjustes
             pinAtivo={pinAtivo}
             aoMudarPin={() => {
@@ -226,7 +267,13 @@ export default function App() {
           </div>
         ) : (
           <>
-            <IndicadorEtapas etapaAtual={etapa} etapas={NOMES_ETAPAS} />
+            <IndicadorEtapas
+              etapaAtual={etapa}
+              etapas={NOMES_ETAPAS}
+              situacoes={situacoesEtapas}
+              habilitadas={etapasHabilitadas}
+              aoSelecionar={irParaEtapa}
+            />
 
             {etapa < ETAPA_RESULTADO && (
             <div className="rounded-xl border border-clinico-100 bg-white p-6 shadow-sm shadow-clinico-900/5">
@@ -267,15 +314,29 @@ export default function App() {
                     marque "Não informado"
                   </p>
                 )}
-                {!etapaCompleta && etapa === ETAPA_EXAMES && (
+                {etapa === ETAPA_EXAMES && examesImplausiveis > 0 && (
                   <p className="text-xs text-risco-alto-600 mb-2 text-right">
                     {examesImplausiveis} {examesImplausiveis === 1 ? "valor" : "valores"} fora do esperado. Confira
                     ou apague o campo.
                   </p>
                 )}
+                {etapa === ETAPA_EXAMES && pendenciasPorEtapa.length > 0 && (
+                  <p className="text-xs text-risco-moderado-800 mb-2 text-right">
+                    Para calcular, falta preencher:{" "}
+                    {pendenciasPorEtapa.map((e, i) => (
+                      <span key={e.numero}>
+                        {i > 0 && ", "}
+                        <button type="button" onClick={() => mudarEtapa(e.numero)} className="underline font-medium">
+                          {e.nome} ({e.faltam})
+                        </button>
+                      </span>
+                    ))}
+                    .
+                  </p>
+                )}
                 <div className="flex justify-between items-center">
                   <button
-                    onClick={() => setEtapa((e) => Math.max(1, e - 1))}
+                    onClick={() => mudarEtapa(Math.max(1, etapa - 1))}
                     disabled={etapa === 1}
                     className="rounded-md px-4 py-2.5 text-sm font-medium text-clinico-700 disabled:opacity-0"
                   >
@@ -284,7 +345,7 @@ export default function App() {
 
                   {etapa < ETAPA_EXAMES ? (
                     <button
-                      onClick={() => etapaCompleta && setEtapa((e) => e + 1)}
+                      onClick={() => etapaCompleta && mudarEtapa(etapa + 1)}
                       disabled={!etapaCompleta}
                       className="rounded-md bg-clinico-700 px-5 py-2.5 text-sm font-medium text-white shadow-sm
                                  hover:bg-clinico-800 transition-colors disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-clinico-700"
@@ -293,8 +354,8 @@ export default function App() {
                     </button>
                   ) : (
                     <button
-                      onClick={() => etapaCompleta && finalizarAtendimento()}
-                      disabled={!etapaCompleta}
+                      onClick={() => podeCalcular && finalizarAtendimento()}
+                      disabled={!podeCalcular}
                       className="rounded-md bg-clinico-700 px-5 py-2.5 text-sm font-medium text-white shadow-sm
                                  hover:bg-clinico-800 transition-colors disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-clinico-700"
                     >

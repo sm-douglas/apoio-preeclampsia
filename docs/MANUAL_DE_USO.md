@@ -11,6 +11,9 @@
 4. **Exames (opcional):** laboratório, proteinúria e ultrassom com Doppler (9 campos). Preencha só o que existir; em
    branco ou "não realizado" vale como não informado, nunca como normal. Do ultrassom, pode registrar só a
    conclusão do laudo. A classificação de risco não depende dos exames.
+   Para conferir ou acrescentar um dado, clique em qualquer etapa na linha de progresso no topo. A bolinha
+   verde indica etapa completa e a de borda amarela indica dados obrigatórios pendentes. Se alterar algum
+   dado depois de calcular, é preciso calcular de novo; o histórico atualiza o mesmo atendimento.
 5. **Calcular avaliação.** O botão só libera quando tudo o que é obrigatório foi respondido ou marcado como
    não informado.
 
@@ -27,6 +30,18 @@ limites do Ministério da Saúde e da RBEHG divergem em alguns exames.
   escolhe entre eles; a decisão é do profissional.
 - **Aviso de completude:** lista o que ficou "não informado". Com dados faltando o resultado pode ser
   **Indeterminado**, nunca "baixo risco" por omissão.
+
+## Medicamentos na APS
+
+O botão **Medicamentos**, no topo, abre uma tela de consulta com quadros dos protocolos: sulfato de magnésio
+(quando usar, esquemas, preparo, o que vigiar), crise hipertensiva, nitroprussiato (uso hospitalar),
+anti-hipertensivos de manutenção, AAS e cálcio, e a planilha de controle do sulfato de magnésio para imprimir.
+Dentro do resultado, o app abre o bloco que combina com o caso: no alerta de gravidade, sulfato de magnésio e
+crise hipertensiva; na hipertensão sem gravidade, os anti-hipertensivos de manutenção.
+
+- Cada quadro mostra o documento e a página. Quando o Ministério da Saúde e a RBEHG divergem, os dois valores
+  aparecem lado a lado e o app não escolhe.
+- O app **não calcula dose** para a gestante e não prescreve. A prescrição e a decisão final são do profissional.
 
 ## Salvar como PDF
 
@@ -55,3 +70,4 @@ primeiro acesso ele abre sem internet.
 - Os dados ficam só no aparelho. Limpar os dados do navegador apaga o histórico; faça backup.
 - Não é diagnóstico nem substitui o julgamento clínico.
 - Sem módulo de diagnóstico laboratorial.
+- Sem cálculo individual de dose. Sulfato ferroso e corticoide antenatal não estão no app.

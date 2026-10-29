@@ -17,7 +17,7 @@ Abre em http://localhost:5173.
 Os testes montam uma gestante, rodam o motor e conferem o resultado. Se alguém mexer numa regra e quebrar
 outra, o teste acusa na hora, e a suíte também serve de evidência de qualidade para a dissertação.
 
-Os testes estão em `src/engine/__tests__/engine.test.ts`. Cada `it("descrição", () => { ... })` é um caso.
+Os testes estão em `src/engine/__tests__/` (`engine.test.ts` para risco e alerta, `diagnostico.test.ts` para exames, diagnóstico e manejo). Cada `it("descrição", () => { ... })` é um caso.
 Para criar um novo, copie um existente, troque os dados e o `expect(...)` e rode `npm test`. Sempre que
 mudar uma regra em `rules-data.ts`, rode os testes; se algum falhar porque a regra mudou de propósito,
 atualize o teste.
@@ -64,10 +64,9 @@ Para testar offline, rode `npm run build` e depois `npm run preview`. Abra o end
 no Chrome, vá em F12 > Network, marque "Offline" e recarregue. O app deve abrir. Service worker e PIN só
 funcionam em https ou localhost.
 
-Para publicar, o caminho mais simples é o GitHub Pages: crie o repositório, envie o projeto e, em
-Settings > Pages, escolha "GitHub Actions" como fonte. O arquivo `.github/workflows/deploy.yml` roda os
-testes, gera o build e publica. O repositório tem só código, nenhum dado de paciente. Para atualizar, mude o
-código, rode `npm test` e envie para o GitHub; o novo `sw.js` troca o cache sozinho.
+Para publicar a versão web, hospede o conteúdo da pasta `dist/` (ou o `app-web-<versão>.zip` de Releases) em
+um endereço https. O repositório tem só código, nenhum dado de paciente. Para atualizar, mude o código, rode
+`npm test` e gere o build de novo; o novo `sw.js` troca o cache sozinho.
 
 ## 5b. Executável de Windows
 

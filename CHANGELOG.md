@@ -1,5 +1,32 @@
 # Histórico de versões
 
+## 1.2.0 (28/10/2026)
+
+Pedido da pesquisadora: levar à equipe da APS a conduta com sulfato de magnésio e as doses dos medicamentos, conforme os protocolos. Conteúdo aprovado por ela em 28/10/2026.
+
+- Nova parte **Medicamentos na APS**, em dois lugares: dentro do resultado (alerta de gravidade mostra sulfato de magnésio e crise hipertensiva; hipertensão sem gravidade mostra os anti-hipertensivos de manutenção) e em uma tela de consulta, aberta pelo botão **Medicamentos** no topo, sem precisar fazer uma avaliação.
+- Sulfato de magnésio: quando usar, esquemas de Pritchard e Zuspan, preparo da dose de ataque e de manutenção, uso no transporte, vigilância (reflexo, frequência respiratória, diurese), insuficiência renal, nova convulsão e antídoto.
+- Crise hipertensiva: nifedipino e hidralazina, com dose inicial, repetição e máximo. Nitroprussiato de sódio (uso hospitalar), com diluição e tabela de infusão.
+- Anti-hipertensivos de manutenção (9 medicamentos), contraindicações e furosemida.
+- Planilha de controle do sulfato de magnésio (Quadro 12 da RBEHG), em branco, para imprimir ou salvar em PDF.
+- AAS e cálcio continuam como estavam, agora também na tela de consulta.
+- Quando o Ministério da Saúde e a RBEHG divergem, os dois aparecem lado a lado, com documento e página. Aviso fixo em todos os quadros: "Os quadros reproduzem os protocolos. A prescrição e a decisão final são do profissional."
+- O app não calcula dose para a gestante e não prescreve.
+- Tabela de infusão do nitroprussiato: só as colunas de 0,5, 1,0 e 2,0 µg/kg/min. As colunas de 3,0, 4,0 e 5,0 do Quadro 10 da RBEHG não conferem com a concentração que o próprio protocolo indica (200 µg/mL) e aguardam conferência com a pesquisadora.
+- Sulfato ferroso e corticoide antenatal não foram incluídos (não estavam na lista aprovada).
+- 119 testes automatizados (24 novos conferem cada dose, intervalo e página).
+
+## 1.1.1 (27/10/2026)
+
+Ajuste pedido pela pesquisadora.
+
+- As etapas do atendimento (Dados, Fatores, Sinais, Exames e Resultado) agora são clicáveis em qualquer ordem. É possível voltar a qualquer etapa para conferir ou acrescentar um dado esquecido.
+- O indicador de etapas mostra quais etapas estão completas e quais têm dados obrigatórios pendentes.
+- O botão "Calcular avaliação" só libera com todos os campos obrigatórios das etapas Dados, Fatores e Sinais preenchidos, e a tela de exames lista o que falta, com atalho para cada etapa.
+- Se um dado for alterado depois do cálculo, o resultado anterior deixa de valer e a etapa Resultado só reabre após calcular de novo, para nunca mostrar um resultado desatualizado.
+- Ao recalcular o mesmo atendimento, o histórico é atualizado em vez de criar um registro repetido.
+
+
 ## 1.1.0 (23/10/2026)
 
 Ajustes pedidos pela pesquisadora (áudios de 11/10/2026).

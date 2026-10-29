@@ -1,7 +1,7 @@
 # Gera o executável portátil de Windows e publica na página "Releases" do GitHub.
 # Como usar: crie uma tag de versão e envie para o GitHub:
-#   git tag v1.1.0
-#   git push origin v1.1.0
+#   git tag v1.2.0
+#   git push origin v1.2.0
 # Em alguns minutos aparecem na aba Releases:
 #   - Apoio-Preeclampsia-<versão>-portable.exe  (baixar e dar duplo clique, sem instalar)
 #   - app-web-<versão>.zip                        (versão web já compilada, para hospedar)
