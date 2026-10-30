@@ -33,7 +33,7 @@ export function Cabecalho({ tela, aoMudarTela, pinAtivo, aoBloquear }: Props) {
   const alternar = (alvo: Tela) => aoMudarTela(tela === alvo ? "avaliacao" : alvo);
   return (
     <header className="no-print bg-clinico-800 text-white">
-      <div className="mx-auto max-w-2xl px-4 py-4 flex items-center justify-between gap-2">
+      <div className="mx-auto max-w-2xl lg:max-w-5xl xl:max-w-6xl 2xl:max-w-[1400px] px-4 py-4 flex items-center justify-between gap-2">
         <div className="flex items-center gap-3 min-w-0">
           <Marca />
           <div className="min-w-0">

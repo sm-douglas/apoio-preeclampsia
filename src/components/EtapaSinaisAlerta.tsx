@@ -16,7 +16,7 @@ export function EtapaSinaisAlerta({ dados, tocados, aoAtualizar }: Props) {
         arterial informada na primeira etapa também entra no alerta.
       </p>
 
-      <div className="rounded-lg border border-clinico-100 bg-white px-4">
+      <div className="rounded-lg border border-clinico-100 bg-white px-4 lg:max-w-2xl">
         <CampoTriState
           rotulo="Cefaleia persistente"
           valor={dados.cefaleiaPersistente}

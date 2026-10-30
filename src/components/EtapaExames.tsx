@@ -65,6 +65,8 @@ export function EtapaExames({ dados, tocados, aoAtualizar }: Props) {
         Os exames ajudam no diagnóstico. A classificação de risco não depende deles.
       </p>
 
+      <div className="lg:grid lg:grid-cols-2 lg:gap-x-12">
+      <div>
       <h3 className="text-sm font-semibold text-clinico-800 mb-1">Laboratório</h3>
       <div className="grid grid-cols-2 gap-x-5 max-w-[440px]">
         {num("plaquetasMm3", "Plaquetas", "/mm³", "150000")}
@@ -87,7 +89,9 @@ export function EtapaExames({ dados, tocados, aoAtualizar }: Props) {
         aoMudar={(v) => aoAtualizar({ proteinuriaFita: v })}
       />
 
-      <h3 className="text-sm font-semibold text-clinico-800 mt-5 mb-1">Ultrassonografia obstétrica com Doppler</h3>
+      </div>
+      <div>
+      <h3 className="text-sm font-semibold text-clinico-800 mt-5 lg:mt-0 mb-1">Ultrassonografia obstétrica com Doppler</h3>
       <p className="text-xs text-indeterminado-600 mb-2">
         Opcional. Sem ultrassom, a avaliação segue normalmente e nada é lido como normal. Se só tiver a conclusão do
         laudo, preencha os campos de conclusão e deixe os números em branco.
@@ -138,6 +142,8 @@ export function EtapaExames({ dados, tocados, aoAtualizar }: Props) {
         opcoes={DIASTOLES}
         aoMudar={(v) => aoAtualizar({ dopplerUmbilicalDiastole: v })}
       />
+      </div>
+      </div>
     </div>
   );
 }

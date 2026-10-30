@@ -16,7 +16,7 @@ export function IndicadorEtapas({ etapaAtual, etapas, situacoes, habilitadas, ao
   const progresso = ((etapaAtual - 1) / (etapas.length - 1)) * 100;
 
   return (
-    <nav aria-label="Etapas do atendimento" className="mb-8 no-print">
+    <nav aria-label="Etapas do atendimento" className="mb-8 no-print lg:mx-auto lg:max-w-3xl">
       <div className="relative mb-1">
         <div className="h-1 w-full rounded-full bg-clinico-100" />
         <div

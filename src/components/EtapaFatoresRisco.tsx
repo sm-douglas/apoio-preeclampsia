@@ -16,6 +16,8 @@ export function EtapaFatoresRisco({ dados, tocados, aoAtualizar }: Props) {
         Se você não souber, marque "Não informado". O app não assume que o fator está ausente.
       </p>
 
+      <div className="lg:grid lg:grid-cols-2 lg:gap-x-8">
+      <div>
       <h3 className="text-sm font-medium text-risco-alto-800 mb-1 mt-2">
         Fatores de alto risco
       </h3>
@@ -31,7 +33,9 @@ export function EtapaFatoresRisco({ dados, tocados, aoAtualizar }: Props) {
         ))}
       </div>
 
-      <h3 className="text-sm font-medium text-risco-moderado-800 mb-1 mt-5">
+      </div>
+      <div>
+      <h3 className="text-sm font-medium text-risco-moderado-800 mb-1 mt-5 lg:mt-2">
         Fatores de risco moderado (2 ou mais indicam profilaxia)
       </h3>
       <div className="rounded-lg border border-clinico-100 bg-white px-4">
@@ -44,6 +48,8 @@ export function EtapaFatoresRisco({ dados, tocados, aoAtualizar }: Props) {
             aoMudar={(v) => aoAtualizar({ [fator.chave]: v } as Partial<DadosGestante>)}
           />
         ))}
+      </div>
+      </div>
       </div>
     </div>
   );

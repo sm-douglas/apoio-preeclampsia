@@ -1,5 +1,15 @@
 # Histórico de versões
 
+## 1.2.1 (30/10/2026)
+
+Ajuste pedido pela pesquisadora e pelo desenvolvedor: adaptar o aplicativo a telas de computador.
+
+- O conteúdo passou a usar a largura da tela em monitores (testado em 1920x1080, 1280x720 e 1024x768), em vez de ficar numa coluna estreita.
+- Nas telas largas, as etapas se organizam em duas colunas: Dados (identificação e idade gestacional à esquerda, medidas e pressão à direita), Fatores (alto risco e risco moderado lado a lado) e Exames (laboratório e proteinúria à esquerda, ultrassom e Doppler à direita).
+- No resultado, os pilares 1 e 2 ficam lado a lado, assim como os pilares 3 e 4. O alerta de gravidade e os quadros de medicamentos usam a largura inteira.
+- No celular e na impressão ou PDF, o layout continua em uma coluna, como antes.
+- Nenhuma regra clínica foi alterada.
+
 ## 1.2.0 (28/10/2026)
 
 Pedido da pesquisadora: levar à equipe da APS a conduta com sulfato de magnésio e as doses dos medicamentos, conforme os protocolos. Conteúdo aprovado por ela em 28/10/2026.

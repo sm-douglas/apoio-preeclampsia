@@ -238,21 +238,23 @@ export default function App() {
         aoBloquear={() => setBloqueado(true)}
       />
 
-      <main className="mx-auto max-w-2xl px-4 py-6">
+      <main className="mx-auto max-w-2xl lg:max-w-5xl xl:max-w-6xl 2xl:max-w-[1400px] px-4 py-6">
         {tela === "medicamentos" ? (
-          <div>
+          <div className="mx-auto max-w-5xl">
             <h2 className="text-lg font-medium text-clinico-900 mb-1">Consulta de medicamentos</h2>
             <MedicamentosAPS foco="todos" />
           </div>
         ) : tela === "ajustes" ? (
+          <div className="mx-auto max-w-3xl">
           <TelaAjustes
             pinAtivo={pinAtivo}
             aoMudarPin={() => {
               setPinAtivo(pinConfigurado());
             }}
           />
+          </div>
         ) : tela === "historico" ? (
-          <div>
+          <div className="mx-auto max-w-3xl">
             {!gestanteHistorico && (
               <h2 className="text-lg font-medium text-clinico-900 mb-3">Gestantes com histórico salvo</h2>
             )}
@@ -276,7 +278,7 @@ export default function App() {
             />
 
             {etapa < ETAPA_RESULTADO && (
-            <div className="rounded-xl border border-clinico-100 bg-white p-6 shadow-sm shadow-clinico-900/5">
+            <div className="rounded-xl border border-clinico-100 bg-white p-6 lg:p-8 shadow-sm shadow-clinico-900/5">
               {etapa === 1 && (
                 <EtapaDados
                   dados={dados}

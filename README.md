@@ -6,10 +6,11 @@ assistenciais nacionais**, cada uma com documento e página de origem.
 
 - Funciona **offline**. Nenhum dado sai do aparelho (IndexedDB).
 - Sem backend, sem login. PIN opcional.
+- Parte **Medicamentos na APS**: sulfato de magnésio, crise hipertensiva, anti-hipertensivos de manutenção e planilha de controle, reproduzidos dos protocolos, sem cálculo de dose.
 - Motor de regras determinístico em TypeScript (sem IA em tempo de execução).
 - Regra central: "não informado" nunca é tratado como "não".
 
-Versão atual: **1.2.0** (ver `CHANGELOG.md`).
+Versão atual: **1.2.1** (ver `CHANGELOG.md`).
 
 ## Duas formas de usar
 
@@ -40,6 +41,7 @@ npm run desktop:build  # gera o .exe portátil em release/ (rode no Windows)
 | Arquivo | O que é |
 | --- | --- |
 | `src/engine/rules-data.ts` | **Regras clínicas e fontes.** É o arquivo que a pesquisadora revisa. |
+| `src/engine/medicamentos.ts` | **Quadros de medicamentos** (doses, preparo, vigilância) com fonte e página. Também é revisado pela pesquisadora. |
 | `src/engine/engine.ts` | Lógica que aplica as regras. |
 | `src/engine/__tests__/` e `src/__tests__/` | Testes automatizados. |
 | `src/validacao.ts` | Faixas plausíveis, PA cruzada, aviso de identificação. |

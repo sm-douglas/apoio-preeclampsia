@@ -1,2 +1,2 @@
 /** Versão do app. Deve ser igual à de package.json (há um teste que confere). */
-export const APP_VERSION = "1.2.0";
+export const APP_VERSION = "1.2.1";

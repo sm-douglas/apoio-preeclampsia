@@ -60,7 +60,7 @@ export function TelaResultado({ resultado, identificacaoCodificada, aoIniciarNov
         </div>
       </div>
 
-      <div className="print-area rounded-xl border border-clinico-100 bg-white p-6 shadow-sm shadow-clinico-900/5">
+      <div className="print-area rounded-xl border border-clinico-100 bg-white p-6 lg:p-8 shadow-sm shadow-clinico-900/5">
         <div className="only-print mb-4 border-b border-gray-300 pb-2">
           <p className="text-base font-semibold">Apoio à decisão clínica · Pré-eclâmpsia na Atenção Primária</p>
           <p className="text-xs">
@@ -103,6 +103,7 @@ export function TelaResultado({ resultado, identificacaoCodificada, aoIniciarNov
         )}
 
 
+        <div className="lg:grid lg:grid-cols-2 lg:gap-x-10">
         {/* Pilar 1 */}
         <SecaoPilar numero={1} titulo="Prevenção da pré-eclâmpsia">
         {/* Recomendações divergentes: sempre lado a lado, nunca uma escolhida */}
@@ -179,6 +180,9 @@ export function TelaResultado({ resultado, identificacaoCodificada, aoIniciarNov
 
         </SecaoPilar>
 
+        </div>
+
+        <div className="lg:grid lg:grid-cols-2 lg:gap-x-10">
         {/* Pilar 3 */}
         <SecaoPilar numero={3} titulo="Diagnóstico">
           {resultado.diagnostico ? <BlocoDiagnostico d={resultado.diagnostico} /> : <SemDados />}
@@ -187,10 +191,13 @@ export function TelaResultado({ resultado, identificacaoCodificada, aoIniciarNov
         {/* Pilar 4 */}
         <SecaoPilar numero={4} titulo="Manejo clínico na Atenção Primária">
           {resultado.manejo ? <BlocoManejo m={resultado.manejo} /> : <SemDados />}
-          {!resultado.alertaGravidade.disparado && resultado.classificacaoPA === "hipertensao" && (
-            <MedicamentosAPS foco="manutencao" />
-          )}
         </SecaoPilar>
+        </div>
+        {!resultado.alertaGravidade.disparado && resultado.classificacaoPA === "hipertensao" && (
+          <div className="mb-6">
+            <MedicamentosAPS foco="manutencao" />
+          </div>
+        )}
 
         {/* Avisos de completude: nunca escondidos */}
         {resultado.avisos.length > 0 && (

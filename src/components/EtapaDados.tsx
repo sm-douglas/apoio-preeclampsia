@@ -28,6 +28,8 @@ export function EtapaDados({ dados, tocados, aoAtualizar, aoAlternarNaoInformado
         Use um código para identificar a gestante, nunca o nome.
       </p>
 
+      <div className="lg:grid lg:grid-cols-2 lg:gap-x-12">
+      <div>
       <label className="block py-2 mb-1">
         <span className="block text-[13px] font-medium text-clinico-800 mb-1.5">Identificação codificada</span>
         <input
@@ -77,6 +79,10 @@ export function EtapaDados({ dados, tocados, aoAtualizar, aoAlternarNaoInformado
             aoAlternarNaoInformado={() => aoAlternarNaoInformado("dataNascimento")}
           />
         </div>
+      </div>
+      </div>
+      <div>
+      <div className="grid grid-cols-2 gap-x-5 max-w-[440px] lg:mt-2">
         <CampoNumerico
           icone={<Scale size={TAM_ICONE} className="text-clinico-600" />}
           rotulo="Peso"
@@ -133,6 +139,8 @@ export function EtapaDados({ dados, tocados, aoAtualizar, aoAlternarNaoInformado
           aoMudar={(v) => aoAtualizar({ pressaoDiastolicaMmHg: v })}
           aoAlternarNaoInformado={() => aoAlternarNaoInformado("pressaoDiastolicaMmHg")}
         />
+      </div>
+      </div>
       </div>
     </div>
   );
